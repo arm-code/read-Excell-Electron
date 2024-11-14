@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lectura de Excel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #file-input {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lectura de Archivos Excel</h1>
+        <button id="select-file-btn">Seleccionar archivo Excel</button>
+        <div id="excel-data"></div>
+    </div>
+
+    <script>
+        // Evento de click en el botón para seleccionar el archivo
+        document.getElementById('select-file-btn').addEventListener('click', async () => {
+            const file = await window.electron.selectExcelFile();
+            if (file) {
+                const data = await window.electron.readExcelFile(file);
+                displayExcelData(data);
+            }
+        });
+
+        // Mostrar los datos del archivo Excel
+        function displayExcelData(data) {
+            const excelDataDiv = document.getElementById('excel-data');
+            excelDataDiv.innerHTML = '';  // Limpiar datos previos
+
+            // Verificar si hay un error
+            if (data.error) {
+                excelDataDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+                return;
+            }
+
+            // Iterar sobre las hojas y mostrar los datos
+            Object.keys(data).forEach(sheetName => {
+                const sheetData = data[sheetName];
+                const table = document.createElement('table');
+                const headerRow = document.createElement('tr');
+
+                // Crear cabecera con el nombre de cada celda de la primera fila
+                sheetData.forEach(cell => {
+                    const th = document.createElement('th');
+                    th.innerText = cell;
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+
+                // Añadir la tabla a la interfaz
+                excelDataDiv.appendChild(table);
+            });
+        }
+    </script>
+</body>
+</html>
